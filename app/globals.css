@@ -29,6 +29,15 @@ body {
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground));
   }
+
+  /* Glassmorphism Classes */
+  .glass-card {
+    @apply bg-white/20 dark:bg-black/40 backdrop-blur-xl border border-white/30 dark:border-white/10 shadow-2xl;
+  }
+
+  .glass-morphism {
+    @apply bg-white/10 dark:bg-black/30 backdrop-blur-lg border border-white/20 dark:border-white/5;
+  }
 }
 
 @layer base {
@@ -67,6 +76,7 @@ body {
     --sidebar-border: 213 20% 30%;
     --sidebar-ring: 213 94% 27%;
   }
+
   .dark {
     --background: 213 32% 12%;
     --foreground: 0 0% 95%;
@@ -107,6 +117,7 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }

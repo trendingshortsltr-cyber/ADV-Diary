@@ -52,44 +52,55 @@ export function CaseCard({
 
   return (
     <Card
-      className={`p-4 cursor-pointer hover:shadow-md transition-shadow ${isHighlighted ? 'border-accent border-2' : ''
+      className={`glass-card p-5 cursor-pointer hover:scale-[1.01] transition-all duration-300 border-white/10 group ${isHighlighted ? 'ring-2 ring-primary border-primary/50' : ''
         }`}
       onClick={onSelect}
     >
       <div className="flex justify-between items-start gap-4">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-2">
-            <h3 className="text-lg font-semibold text-foreground">{c.clientName}</h3>
+          <div className="flex items-center gap-3 mb-3">
+            <h3 className="text-xl font-black text-slate-900 group-hover:text-primary transition-colors">{c.clientName}</h3>
             <span
-              className={`px-2 py-1 rounded-full text-xs font-medium ${c.status === 'Active'
-                  ? 'bg-primary/10 text-primary'
-                  : 'bg-muted text-muted-foreground'
+              className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${c.status === 'Active'
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50'
+                : 'bg-white/20 text-white/90 border border-white/30'
                 }`}
             >
               {c.status}
             </span>
           </div>
-          <p className="text-sm text-muted-foreground mb-1">Case: {c.caseNumber}</p>
-          <p className="text-sm text-muted-foreground">Court: {c.courtName}</p>
+
+          <div className="space-y-1 mb-4">
+            <p className="text-sm font-black text-slate-800 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+              CASE: {c.caseNumber}
+            </p>
+            <p className="text-sm font-black text-slate-800 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+              COURT: {c.courtName}
+            </p>
+          </div>
 
           {nextHearing && (
-            <div className="mt-3 pt-3 border-t border-border">
-              <p className="text-xs font-medium text-muted-foreground mb-1">Next Hearing</p>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`font-semibold ${isToday(nextHearing.date)
-                      ? 'text-destructive'
-                      : 'text-foreground'
-                    }`}
-                >
-                  {formatDate(nextHearing.date)}
-                </span>
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] mb-2">Next Hearing</p>
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${isToday(nextHearing.date) ? 'bg-destructive/20' : 'bg-primary/20'}`}>
+                  <span
+                    className={`text-sm font-black ${isToday(nextHearing.date) ? 'text-destructive-foreground' : 'text-slate-900'
+                      }`}
+                  >
+                    {formatDate(nextHearing.date)}
+                  </span>
+                </div>
                 {nextHearing.time && (
-                  <span className="text-sm text-muted-foreground">{nextHearing.time}</span>
+                  <span className="text-xs font-black text-slate-900 bg-slate-900/10 px-2 py-1 rounded border border-slate-900/20">
+                    {nextHearing.time}
+                  </span>
                 )}
                 {isToday(nextHearing.date) && (
-                  <span className="text-xs bg-destructive text-white px-2 py-0.5 rounded">
-                    Today
+                  <span className="text-[10px] font-black bg-destructive text-white px-2 py-1 rounded uppercase tracking-tighter animate-pulse">
+                    URGENT
                   </span>
                 )}
               </div>
@@ -97,15 +108,18 @@ export function CaseCard({
           )}
 
           {c.notes && (
-            <div className="mt-2 text-xs text-muted-foreground italic">
-              {c.notes.length > 100 ? `${c.notes.substring(0, 100)}...` : c.notes}
+            <div className="mt-4 text-xs text-slate-800 leading-relaxed max-w-xl">
+              <span className="font-black text-slate-900/50 uppercase text-[9px] tracking-widest block mb-1">Notes:</span>
+              <p className="italic font-medium">{c.notes.length > 120 ? `${c.notes.substring(0, 120)}...` : c.notes}</p>
             </div>
           )}
 
           {c.files && c.files.length > 0 && (
-            <div className="mt-3 flex items-center gap-1 text-xs text-primary">
-              <Paperclip className="w-4 h-4" />
-              <span>{c.files.length} file{c.files.length > 1 ? 's' : ''} attached</span>
+            <div className="mt-4 flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest">
+              <div className="w-6 h-6 rounded-md bg-primary/20 flex items-center justify-center">
+                <Paperclip className="w-3.5 h-3.5" />
+              </div>
+              <span>{c.files.length} DOCUMENT{c.files.length > 1 ? 'S' : ''}</span>
             </div>
           )}
         </div>
@@ -118,13 +132,14 @@ export function CaseCard({
               e.stopPropagation();
               onSelect();
             }}
+            className="bg-white/5 border-white/10 text-white hover:bg-primary hover:border-primary font-bold shadow-lg"
           >
-            View
+            Manage
           </Button>
           <Button
             size="sm"
             variant="ghost"
-            className="text-destructive hover:bg-destructive/10"
+            className="text-white/60 hover:text-destructive hover:bg-destructive/10 text-[10px] font-black uppercase"
             onClick={(e) => {
               e.stopPropagation();
               if (confirm('Are you sure you want to delete this case?')) {
@@ -132,7 +147,7 @@ export function CaseCard({
               }
             }}
           >
-            Delete
+            Archive
           </Button>
         </div>
       </div>

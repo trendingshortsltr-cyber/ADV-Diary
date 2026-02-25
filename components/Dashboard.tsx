@@ -10,6 +10,7 @@ import { CaseCard } from './CaseCard';
 import { CaseDetailModal } from './CaseDetailModal';
 import { CalendarView } from './CalendarView';
 import { TimelineView } from './TimelineView';
+import { Logo } from './Logo';
 
 type View = 'dashboard' | 'today' | 'week' | 'calendar' | 'timeline';
 
@@ -30,6 +31,7 @@ interface DashboardProps {
   searchCases?: (query: string) => Case[];
   getSortedCases?: (filtered?: Case[]) => Case[];
   isLoading?: boolean;
+  error?: string | null;
 }
 
 export function Dashboard({
@@ -49,6 +51,7 @@ export function Dashboard({
   searchCases: propSearchCases,
   getSortedCases: propGetSortedCases,
   isLoading: propIsLoading = false,
+  error: propError = null,
 }: DashboardProps) {
   const cases = propCases || [];
   const addCase = propAddCase || (async () => { });
@@ -62,8 +65,18 @@ export function Dashboard({
 
   const getTodaysHearings = propGetTodaysHearings || (() => []);
   const getUpcomingWeek = propGetUpcomingWeek || (() => []);
-  const searchCases = propSearchCases || ((q: string) => []);
-  const getSortedCases = propGetSortedCases || ((f?: Case[]) => []);
+  const searchCases = propSearchCases || ((query: string) => {
+    const lowerQuery = query.toLowerCase();
+    return cases.filter((c: Case) =>
+      c.clientName.toLowerCase().includes(lowerQuery) ||
+      c.caseNumber.toLowerCase().includes(lowerQuery) ||
+      c.courtName.toLowerCase().includes(lowerQuery)
+    );
+  });
+  const getSortedCases = propGetSortedCases || ((f?: Case[]) => {
+    const casesToSort = f || cases;
+    return [...casesToSort].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  });
 
   const [activeView, setActiveView] = useState<View>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,7 +88,7 @@ export function Dashboard({
   const filteredCases = useMemo(() => {
     let result = searchQuery ? searchCases(searchQuery) : cases;
     if (statusFilter !== 'All') {
-      result = result.filter(c => c.status === statusFilter);
+      result = result.filter((c: Case) => c.status === statusFilter);
     }
     return getSortedCases(result);
   }, [cases, searchQuery, statusFilter, searchCases, getSortedCases]);
@@ -92,16 +105,12 @@ export function Dashboard({
     switch (activeView) {
       case 'today':
         return (
-          <div className="space-y-4">
-            <div
-              className="rounded-lg overflow-hidden h-32 bg-cover bg-center relative"
-              style={{
-                backgroundImage: 'url(/images/judge-gavel.jpg)',
-              }}
-            >
-              <div className="absolute inset-0 bg-black/40" />
-              <div className="relative z-10 flex items-center h-full px-6">
-                <h2 className="text-3xl font-bold text-white">Today's Hearings</h2>
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-1.5 h-8 bg-primary rounded-full" />
+              <div>
+                <h2 className="text-3xl font-black text-white tracking-tighter uppercase">Today's Schedule</h2>
+                <p className="text-[10px] font-black text-white/40 tracking-[0.3em] uppercase">Live court sessions</p>
               </div>
             </div>
             {todaysHearings.length === 0 ? (
@@ -126,16 +135,12 @@ export function Dashboard({
 
       case 'week':
         return (
-          <div className="space-y-4">
-            <div
-              className="rounded-lg overflow-hidden h-32 bg-cover bg-center relative"
-              style={{
-                backgroundImage: 'url(/images/legal-documents.jpg)',
-              }}
-            >
-              <div className="absolute inset-0 bg-black/40" />
-              <div className="relative z-10 flex items-center h-full px-6">
-                <h2 className="text-3xl font-bold text-white">Next 7 Days</h2>
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-1.5 h-8 bg-primary rounded-full" />
+              <div>
+                <h2 className="text-3xl font-black text-white tracking-tighter uppercase">Weekly Forecast</h2>
+                <p className="text-[10px] font-black text-white/40 tracking-[0.3em] uppercase">Upcoming 7 days</p>
               </div>
             </div>
             {upcomingWeek.length === 0 ? (
@@ -164,16 +169,12 @@ export function Dashboard({
 
       case 'calendar':
         return (
-          <div className="space-y-4">
-            <div
-              className="rounded-lg overflow-hidden h-32 bg-cover bg-center relative"
-              style={{
-                backgroundImage: 'url(/images/law-office.jpg)',
-              }}
-            >
-              <div className="absolute inset-0 bg-black/40" />
-              <div className="relative z-10 flex items-center h-full px-6">
-                <h2 className="text-3xl font-bold text-white">Calendar View</h2>
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-1.5 h-8 bg-primary rounded-full" />
+              <div>
+                <h2 className="text-3xl font-black text-white tracking-tighter uppercase">Court Calendar</h2>
+                <p className="text-[10px] font-black text-white/40 tracking-[0.3em] uppercase">Full Monthly View</p>
               </div>
             </div>
             <CalendarView cases={cases} />
@@ -182,16 +183,12 @@ export function Dashboard({
 
       case 'timeline':
         return (
-          <div className="space-y-4">
-            <div
-              className="rounded-lg overflow-hidden h-32 bg-cover bg-center relative"
-              style={{
-                backgroundImage: 'url(/images/team-collaboration.jpg)',
-              }}
-            >
-              <div className="absolute inset-0 bg-black/40" />
-              <div className="relative z-10 flex items-center h-full px-6">
-                <h2 className="text-3xl font-bold text-white">All Cases Timeline</h2>
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-1.5 h-8 bg-primary rounded-full" />
+              <div>
+                <h2 className="text-3xl font-black text-white tracking-tighter uppercase">Case Timeline</h2>
+                <p className="text-[10px] font-black text-white/40 tracking-[0.3em] uppercase">Chronological History</p>
               </div>
             </div>
             <TimelineView cases={filteredCases} />
@@ -200,16 +197,12 @@ export function Dashboard({
 
       default:
         return (
-          <div className="space-y-4">
-            <div
-              className="rounded-lg overflow-hidden h-32 bg-cover bg-center relative"
-              style={{
-                backgroundImage: 'url(/images/case-files.jpg)',
-              }}
-            >
-              <div className="absolute inset-0 bg-black/40" />
-              <div className="relative z-10 flex items-center h-full px-6">
-                <h2 className="text-3xl font-bold text-white">My Cases</h2>
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-1.5 h-8 bg-primary rounded-full" />
+              <div>
+                <h2 className="text-3xl font-black text-white tracking-tighter uppercase">Professional Dashboard</h2>
+                <p className="text-[10px] font-black text-white/40 tracking-[0.3em] uppercase">Overview of all cases</p>
               </div>
             </div>
             {filteredCases.length === 0 && !searchQuery ? (
@@ -222,7 +215,7 @@ export function Dashboard({
               </Card>
             ) : (
               <div className="grid gap-4">
-                {filteredCases.map(c => (
+                {filteredCases.map((c: Case) => (
                   <CaseCard
                     key={c.id}
                     case={c}
@@ -239,114 +232,164 @@ export function Dashboard({
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header
-        className="sticky top-0 z-40 bg-cover bg-center bg-no-repeat border-b border-border shadow-sm relative"
+    <div className="relative min-h-screen font-sans antialiased text-foreground">
+      {/* Dynamic Background */}
+      <div
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
         style={{
-          backgroundImage: 'url(/images/courthouse.jpg)',
-          minHeight: '140px',
+          backgroundImage: 'url("https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=2000")', // Fallback high-quality courtroom
+          filter: 'brightness(0.5)'
         }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/85 to-primary/65" />
-        <div className="relative z-10 max-w-7xl mx-auto px-4 py-4 flex items-center justify-between h-full">
-          <div>
-            <h1 className="text-3xl font-bold text-primary-foreground">CaseTrack</h1>
-            <p className="text-sm text-primary-foreground/90">{userEmail}</p>
-          </div>
-          <Button variant="outline" onClick={onLogout} className="bg-background hover:bg-secondary">
-            Logout
-          </Button>
-        </div>
-      </header>
+      />
+      <div className="fixed inset-0 z-0 bg-gradient-to-b from-black/20 via-transparent to-black/40" />
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Quick Stats Card */}
-        <Card className="mb-8 p-6 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Total Cases</p>
-              <p className="text-3xl font-bold text-primary">{cases.length}</p>
+      {/* Main Container */}
+      <div className="relative z-10">
+        {/* Header */}
+        <header className="sticky top-0 z-40 glass-morphism border-b border-white/10 shadow-xl backdrop-blur-md">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Logo className="w-12 h-12" />
+              <div>
+                <h1 className="text-2xl font-black text-white tracking-tight uppercase">Advocate Diary</h1>
+                <p className="text-[10px] font-bold text-white/90 tracking-widest uppercase">{userEmail}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Active Cases</p>
-              <p className="text-3xl font-bold text-primary">{cases.filter(c => c.status === 'Active').length}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Today's Hearings</p>
-              <p className="text-3xl font-bold text-primary">{todaysHearings.length}</p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Navigation Tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          <Button
-            variant={activeView === 'dashboard' ? 'default' : 'outline'}
-            onClick={() => setActiveView('dashboard')}
-            size="sm"
-          >
-            All Cases
-          </Button>
-          <Button
-            variant={activeView === 'today' ? 'default' : 'outline'}
-            onClick={() => setActiveView('today')}
-            size="sm"
-          >
-            Today's Hearings
-          </Button>
-          <Button
-            variant={activeView === 'week' ? 'default' : 'outline'}
-            onClick={() => setActiveView('week')}
-            size="sm"
-          >
-            Next 7 Days
-          </Button>
-          <Button
-            variant={activeView === 'calendar' ? 'default' : 'outline'}
-            onClick={() => setActiveView('calendar')}
-            size="sm"
-          >
-            Calendar
-          </Button>
-          <Button
-            variant={activeView === 'timeline' ? 'default' : 'outline'}
-            onClick={() => setActiveView('timeline')}
-            size="sm"
-          >
-            Timeline
-          </Button>
-        </div>
-
-        {/* Search and Filters */}
-        <div className="flex gap-4 mb-6 flex-col sm:flex-row">
-          <Input
-            placeholder="Search by client name, case number, or court..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1"
-          />
-          {activeView === 'dashboard' && (
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="px-3 py-2 border border-input rounded-md text-sm bg-background text-foreground"
+            <Button
+              variant="outline"
+              onClick={onLogout}
+              className="bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm transition-all duration-300 font-bold"
             >
-              <option value="All">All Status</option>
-              <option value="Active">Active</option>
-              <option value="Closed">Closed</option>
-            </select>
-          )}
-          <Button onClick={() => setShowForm(true)} className="whitespace-nowrap">
-            + New Case
-          </Button>
-        </div>
+              Logout
+            </Button>
+          </div>
+        </header>
 
-        {/* Main Content */}
-        {renderView()}
+        <main className="max-w-7xl mx-auto px-6 py-10">
+          {/* Error Display */}
+          {propError && (
+            <div className="mb-8 p-4 glass-card border-destructive/30 text-destructive-foreground text-sm flex items-center justify-between animate-in fade-in slide-in-from-top-4 duration-500">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-destructive/20 flex items-center justify-center">
+                  <span className="font-bold">!</span>
+                </div>
+                <span>{propError}</span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => window.location.reload()} className="hover:bg-destructive/20 text-white">
+                Retry
+              </Button>
+            </div>
+          )}
+
+          {/* Stats Cards Row */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            {[
+              { label: 'Total Cases', value: propIsLoading && cases.length === 0 ? '...' : cases.length, color: 'from-blue-500/20 to-indigo-500/20' },
+              { label: 'Active Cases', value: propIsLoading && cases.length === 0 ? '...' : cases.filter(c => c.status === 'Active').length, color: 'from-emerald-500/20 to-teal-500/20' },
+              { label: "Today's Hearings", value: propIsLoading && cases.length === 0 ? '...' : todaysHearings.length, color: 'from-amber-500/20 to-orange-500/20' }
+            ].map((stat, i) => (
+              <div key={i} className={`glass-card p-6 rounded-2xl flex flex-col justify-center items-center text-center group hover:scale-[1.02] transition-all duration-500 cursor-default bg-gradient-to-br ${stat.color}`}>
+                <p className="text-xs font-black text-white/90 uppercase tracking-widest mb-1">{stat.label}</p>
+                <p className="text-5xl font-black text-white group-hover:text-primary-foreground transition-colors duration-300">{stat.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Controls Area */}
+          <div className="glass-card p-6 rounded-2xl mb-10 border-white/10">
+            {/* View Navigation */}
+            <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-none no-scrollbar">
+              {[
+                { id: 'dashboard', label: 'All Cases' },
+                { id: 'today', label: "Today's Hearings" },
+                { id: 'week', label: 'Next 7 Days' },
+                { id: 'calendar', label: 'Calendar' },
+                { id: 'timeline', label: 'Timeline' }
+              ].map((view) => (
+                <button
+                  key={view.id}
+                  onClick={() => setActiveView(view.id as any)}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-black tracking-tight transition-all duration-300 whitespace-nowrap ${activeView === view.id
+                    ? 'bg-primary text-white shadow-lg shadow-primary/30 ring-2 ring-primary/20'
+                    : 'bg-white/10 text-white hover:bg-white/20 border border-white/20'
+                    }`}
+                >
+                  {view.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Search and Action */}
+            <div className="flex gap-4 flex-col lg:flex-row items-stretch lg:items-center">
+              <div className="relative flex-1 group">
+                <Input
+                  placeholder="Universal search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white/10 border-white/20 text-white placeholder:text-white/60 h-12 pl-12 rounded-xl focus-visible:ring-primary/40 focus-visible:border-primary/50 transition-all duration-300 font-bold"
+                />
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 opacity-70 group-focus-within:opacity-100 transition-opacity">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                </div>
+              </div>
+
+              {activeView === 'dashboard' && (
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  className="px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-sm text-white font-bold focus:outline-none focus:ring-2 focus:ring-primary/40 h-12 backdrop-blur-md appearance-none cursor-pointer hover:bg-white/20 transition-colors"
+                >
+                  <option value="All" className="bg-slate-900">All Status</option>
+                  <option value="Active" className="bg-slate-900">Active</option>
+                  <option value="Closed" className="bg-slate-900">Closed</option>
+                </select>
+              )}
+
+              <Button
+                onClick={() => setShowForm(true)}
+                className="h-12 px-8 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-lg shadow-primary/20 transition-all duration-300 hover:scale-[1.03] active:scale-95 whitespace-nowrap"
+              >
+                + Create Case
+              </Button>
+            </div>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="relative min-h-[500px] animate-in fade-in duration-700">
+            {propIsLoading && cases.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-32 rounded-3xl glass-card bg-white/5 border-dashed border-white/20">
+                <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-6" />
+                <p className="text-white font-bold tracking-widest text-sm uppercase animate-pulse">Synchronizing Data...</p>
+              </div>
+            ) : cases.length === 0 && !propError ? (
+              <div className="p-16 text-center glass-card rounded-3xl border-dashed border-white/20">
+                <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                </div>
+                <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">Your Digital Diary is Empty</h2>
+                <p className="text-white/90 mb-8 font-black">Start organizing your professional career by adding your first client case.</p>
+                <Button onClick={() => setShowForm(true)} className="bg-primary hover:bg-primary/90 text-white font-bold px-10 py-6 rounded-2xl shadow-xl shadow-primary/30 h-auto text-lg transition-transform hover:scale-105 active:scale-95">
+                  Begin Now
+                </Button>
+              </div>
+            ) : (
+              <div className="glass-card p-4 sm:p-8 rounded-3xl border-white/10 shadow-2xl backdrop-blur-2xl">
+                {renderView()}
+              </div>
+            )}
+          </div>
+        </main>
+
+        <footer className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row justify-between items-center border-t border-white/10">
+          <p className="text-[10px] uppercase font-black text-white tracking-[0.3em]">© 2026 Advocate Digital Diary • CaseTrack Pro</p>
+          <div className="flex gap-4 mt-4 md:mt-0">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="System Online" />
+            <span className="text-[10px] text-white font-black uppercase tracking-widest">Server Secure</span>
+          </div>
+        </footer>
       </div>
 
-      {/* Modals */}
+      {/* Modals - ensure they have their own glass effect through their implementation or parents */}
       {showForm && (
         <CaseForm
           onSubmit={handleAddCase}
@@ -356,7 +399,7 @@ export function Dashboard({
 
       {selectedCase && (
         <CaseDetailModal
-          case={selectedCase}
+          case={cases.find(c => c.id === selectedCase.id) || selectedCase}
           onClose={() => setSelectedCase(null)}
           onUpdate={updateCase}
           onAddHearing={addHearingDate}

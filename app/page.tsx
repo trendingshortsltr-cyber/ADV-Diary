@@ -11,6 +11,7 @@ export default function Page() {
   const {
     cases,
     isLoading: casesLoading,
+    error: casesError,
     addCase,
     updateCase,
     deleteCase,
@@ -48,8 +49,7 @@ export default function Page() {
       <FirebaseAuthPage
         onAuthSuccess={() => {
           // Auth state will update automatically via useFirebaseAuth
-          setIsInitialized(false);
-          setTimeout(() => setIsInitialized(true), 500);
+          setIsInitialized(true);
         }}
       />
     );
@@ -73,6 +73,7 @@ export default function Page() {
       searchCases={searchCases}
       getSortedCases={getSortedCases}
       isLoading={casesLoading}
+      error={casesError}
     />
   );
 }

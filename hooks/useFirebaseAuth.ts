@@ -8,6 +8,8 @@ import {
     signOut as firebaseSignOut,
     GoogleAuthProvider,
     signInWithPopup,
+    setPersistence,
+    browserLocalPersistence,
     User
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
@@ -25,11 +27,13 @@ export function useFirebaseAuth() {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
             if (firebaseUser) {
+                console.log('User signed in:', firebaseUser.uid, firebaseUser.email);
                 setUser({
                     id: firebaseUser.uid,
                     email: firebaseUser.email!,
                 });
             } else {
+                console.log('User signed out');
                 setUser(null);
             }
             setIsLoading(false);
@@ -83,6 +87,7 @@ export function useFirebaseAuth() {
     const signInWithGoogle = useCallback(async () => {
         try {
             setError(null);
+            await setPersistence(auth, browserLocalPersistence);
             const provider = new GoogleAuthProvider();
             const userCredential = await signInWithPopup(auth, provider);
             const firebaseUser = userCredential.user;

@@ -15,6 +15,7 @@ interface CaseFormProps {
 
 export function CaseForm({ onSubmit, onClose, initialData }: CaseFormProps) {
   const [clientName, setClientName] = useState(initialData?.clientName || '');
+  const [clientPhone, setClientPhone] = useState(initialData?.clientPhone || '');
   const [caseNumber, setCaseNumber] = useState(initialData?.caseNumber || '');
   const [courtName, setCourtName] = useState(initialData?.courtName || '');
   const [status, setStatus] = useState<'Active' | 'Closed'>(initialData?.status || 'Active');
@@ -47,8 +48,17 @@ export function CaseForm({ onSubmit, onClose, initialData }: CaseFormProps) {
 
     const validHearings = hearingDates.filter(h => h.date.trim());
 
+    console.log('CaseForm submitting data:', {
+      clientName,
+      clientPhone,
+      caseNumber,
+      hearingDatesCount: validHearings.length,
+      validHearings
+    });
+
     onSubmit({
       clientName,
+      clientPhone,
       caseNumber,
       courtName,
       status,
@@ -111,6 +121,17 @@ export function CaseForm({ onSubmit, onClose, initialData }: CaseFormProps) {
                 {errors.clientName && (
                   <p className="text-destructive text-sm mt-1">{errors.clientName}</p>
                 )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">
+                  Client Phone Number
+                </label>
+                <Input
+                  value={clientPhone}
+                  onChange={(e) => setClientPhone(e.target.value)}
+                  placeholder="Phone number"
+                />
               </div>
 
               <div>

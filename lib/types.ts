@@ -16,6 +16,7 @@ export interface HearingDate {
 export interface Case {
     id: string;
     clientName: string;
+    clientPhone?: string;
     caseNumber: string;
     courtName: string;
     hearingDates: HearingDate[];
